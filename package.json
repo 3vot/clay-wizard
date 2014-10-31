@@ -1,0 +1,22 @@
+{
+  "name": "clay_wizard",
+  "version": "0.0.0",
+  "description": "Clay Clases to build a Wizard with Salesforce.com and Clayforsalesforce.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/3vot/clay-wizard"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/3vot/clay-wizard/issues"
+  },
+  "dependencies": {
+    "events": "~1.0.2",
+    "inherits": "~2.0.1"
+  }
+}
