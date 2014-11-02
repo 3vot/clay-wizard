@@ -2,7 +2,11 @@ var domify = require("domify");
 var Events  = require("events").EventEmitter
 
 
-function Wizard(name, Layout){
+function Wizard(dirname, Layout){
+	var name;
+	if(dirname.indexOf("/") > -1) name = dirname.split("/").pop();
+	else name = dirname
+
 	var _this = this;
 	this.name = name;
 	this.Layout = Layout;
@@ -18,11 +22,10 @@ function Wizard(name, Layout){
 
 	this.actions = this.el.querySelectorAll(".wizard_action");
 	this.listeners = [];
-
-
 }
 
 Wizard.prototype = Object.create(Events.prototype);
+
 
 Wizard.prototype.registerElements = function(){
 	for (var i = this.elements.length - 1; i >= 0; i--) {
@@ -33,6 +36,10 @@ Wizard.prototype.registerElements = function(){
 }
 
 Wizard.prototype.registerActions = function(){
+	for (var i = this.listeners.length - 1; i >= 0; i--) {
+		this.listeners[i].onclick = function(){}
+	};
+	this.listeners =[];
 	var _this = this;
 	for (var i = this.actions.length - 1; i >= 0; i--) {
 		var element = this.actions[i];
@@ -44,11 +51,19 @@ Wizard.prototype.registerActions = function(){
 	};
 
 	function onclick(_this, element, values){
-		element.onclick = function(){
-			_this[element.dataset.onclick].apply(_this, values);
+		element.onclick = function(e){
+			var target = e.target
+			while(!target.classList.contains("wizard_action") && !target.classList.contains("view") ){ target = target.parentNode; }
+			e.actionTarget = target;
+			
+			if(target.dataset.wait){
+				var original = e.target.innerHTML;
+				target.innerHTML = "...";
+				setTimeout(function(){ target.innerHTML = original },2500)
+			}
+			_this[element.dataset.onclick].call(_this, e, values);
 		}
 	}
-
 }
 
 Wizard.prototype.onView = function(){
@@ -58,6 +73,8 @@ Wizard.prototype.onView = function(){
 }
 
 Wizard.prototype.showError = function(err){
+	if(Object.prototype.toString.call(err) === '[object Array]' ) err = err[0]
+	if(err.message) err = err.message
 	this.lblError.innerHTML = err;
 	this.lblError.style.display = "block";
 }

@@ -1,28 +1,48 @@
 var domify = require("domify");
-
 var Size = require("element-size")
-
 var slider, leftBorder, rightBorder, bottomBorder, container, topBorder, currentController, viewportWidth, viewportHeight;
 var currentControllerIndex = 0;
 var controllers = {};
 var controllersKeys = []
 var views = [];
 var processManager;
+var processIndexLabel;
+var Events  = require("events").EventEmitter
 
-var LayoutManager = function(){}
+var LayoutManager = new Events();
+
 module.exports = LayoutManager;
 
-LayoutManager.register = function(containerSelector, processManagerController){
+LayoutManager.register = function(containerSelector, processManagerController, options){
 	container = document.querySelector(containerSelector);
   processManager = processManagerController;
+  var height = window.y;
 
-  //Register Positions and Sized for Animations
-	var position = Position(container); 
-	rightBorder = position.width;
+  if(options){
+    if(options.processIndexLabel) processIndexLabel = options.processIndexLabel
+    if(options.heightOffset) height -=  options.heightOffset;
+  }
+
 
   slider = domify('<div id="app-container" class="main slide-container"></div>');
-  slider.style.height =  "500px" ;
+  slider.style.height =  height + "px" ;
   container.appendChild( slider );
+
+
+}
+
+LayoutManager.start = function(){
+  var key = controllersKeys[0];
+  
+  processManager.route( controllers[key], { action: "start", values: null } )
+}
+
+LayoutManager.goBack = function(){
+  var key = controllers[currentController.name];
+  var currentIndex = controllersKeys.indexOf(key) -1;
+  if(currentIndex == 0) return "This is the first step, can't go back";
+
+  processManager.route( currentController, { action: "back", values: null } )
 }
 
 LayoutManager.registerView = function(controller){
@@ -36,18 +56,23 @@ LayoutManager.registerView = function(controller){
   controller.view = view;
 	slider.appendChild(view);
 
-  controller.view.style.left = rightBorder + 10 + "px";
+  controller.view.style.left = window.x + "px"
 
   controller.view.style.display = "none";
 
   controller.on("STEP", function(options){ 
-    if(options.action == "back") options.values = controller.lastValues || null
+    if(options.action == "back") options.values = null
     processManager.route( controller, options )
   });
 }
 
 LayoutManager.bringIntoView = function(key, values, action){
   var controller = controllers[key]
+  var index = controllersKeys.indexOf(key) || 1;
+
+  if(processIndexLabel) processIndexLabel.innerHTML = index;
+
+  if(!controller) throw "LAYOUT_MANAGER could not find controller with key " + key + " did you remember to create it in index.js? "
   controller.view.style.display = "block";
 
   if(ProcessManager.debug && currentController) console.log("LAYOUT_MANAGER", "LEAVING_VIEW::", currentController.name , { "controller": currentController } )
@@ -68,6 +93,7 @@ LayoutManager.bringIntoView = function(key, values, action){
     currentController = controller;
     controller.view.style.left =  "20%";
     controller.view.style.opacity = 1;
+    LayoutManager.emit("VIEW_CHANGE", key);
 
     if(ProcessManager.debug) console.log("LAYOUT_MANAGER", "********  STEP COMPLETE *************" )
 
@@ -75,31 +101,8 @@ LayoutManager.bringIntoView = function(key, values, action){
   }, 30 );
 }
 
-function Position(element){
-  var node = element, box = {left: 0, right: 0, top: 0, bottom: 0},
-      win = window, doc = node.ownerDocument,
-      docElem = doc.documentElement,
-      body = doc.body
 
-  if (typeof node.getBoundingClientRect !== "undefined"){
-      box = node.getBoundingClientRect()
-  }
 
-  var clientTop  = docElem.clientTop  || body.clientTop  || 0,
-      clientLeft = docElem.clientLeft || body.clientLeft || 0,
-      scrollTop  = win.pageYOffset || docElem.scrollTop,
-      scrollLeft = win.pageXOffset || docElem.scrollLeft,
-      dx = scrollLeft - clientLeft,
-      dy = scrollTop - clientTop
-
-  return {
-      x: box.left + dx, left: box.left + dx,
-      y: box.top + dy, top: box.top + dy,
-      right: box.right + dx, bottom: box.bottom + dy,
-      width: box.right - box.left,
-      height: box.bottom - box.top
-  }
-}
 
 function updateHistory(index){
   var history = window.history;

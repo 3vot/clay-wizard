@@ -2,16 +2,14 @@ var LayoutManager = require("./layoutManager")
 
 ProcessManager = function(){}
 
-// When back is used, the values sent to the view being activated when it was first activated, are resent automatically
-
-// You can choose to use the old one, or keep everything as is in the current ones.
-
-// Ultimately you can make a decisin
-
+// Routes define each step forward and backward.
+// Back steps can be controlled from LayoutManager.back function or via this.emit("step") in each wizard step
+// Default names for steps are next and back, but you can have custom ones and several ones for complex flows
 ProcessManager.routes = {}
 
-ProcessManager.route = function( controller, options ){
 
+ProcessManager.route = function( controller, options ){
+	LayoutManager.emit("CHANGE_START");
 	if(ProcessManager.debug) console.log("PROCESS_MANAGER: ROUTE CALLED FROM ::", controller.name, {"Action":options.action, "Values": options.values, "Controller":controller})
 
 	var controllerRoute = ProcessManager.routes[controller.name]
@@ -23,8 +21,22 @@ ProcessManager.route = function( controller, options ){
   controller.lastValues = options.values;
 }
 
-ProcessManager.bringIntoView = function(name, values, action){
-	LayoutManager.bringIntoView( name, values, action )
+// Function to trigger LayoutManager Events
+// Only LayoutManager communicates eventfully with other components
+ProcessManager.fireDelayed = function(event){
+	setTimeout(function(){
+		LayoutManager.emit(event);
+	},800);
 }
+
+//Internal function for debugging and connection with LayoutManager, LayoutManager is not exposed
+ProcessManager.bringIntoView = function(name, values, action){
+	if(ProcessManager.debug) console.log("PROCESS_MANAGER: STATE ::", values);
+	LayoutManager.bringIntoView( name, values, action )
+	LayoutManager.emit("CHANGE_END");
+}
+
+//Recommended function used to load a new process into the manager, it is pre-defined so that it's easy to bind
+ProcessManager.loadProcess=function(){}
 
 module.exports = ProcessManager;

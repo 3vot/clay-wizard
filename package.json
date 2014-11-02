@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "events": "~1.0.2",
-    "inherits": "~2.0.1"
+    "inherits": "~2.0.1",
+    "insert-css": "~0.2.0"
   }
 }
