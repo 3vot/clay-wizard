@@ -14,7 +14,7 @@ var LayoutManager = new Events();
 module.exports = LayoutManager;
 
 LayoutManager.register = function(containerSelector, processManagerController, options){
-	container = document.querySelector(containerSelector);
+  container = document.querySelector(containerSelector);
   processManager = processManagerController;
   var height = window.y;
 
@@ -46,7 +46,7 @@ LayoutManager.goBack = function(){
 }
 
 LayoutManager.registerView = function(controller){
-	controllersKeys.push(controller.name);
+  controllersKeys.push(controller.name);
   controllers[controller.name] = controller;
   
   views.push( controller );
@@ -54,7 +54,7 @@ LayoutManager.registerView = function(controller){
   var view = domify('<div class="view"></div>')
   view.appendChild(controller.el)
   controller.view = view;
-	slider.appendChild(view);
+  slider.appendChild(view);
 
   controller.view.style.left = window.x + "px"
 
@@ -92,6 +92,7 @@ LayoutManager.bringIntoView = function(key, values, action){
 
     currentController = controller;
     controller.view.style.left =  "20%";
+    if(window.x < 800) controller.view.style.left = "5%";
     controller.view.style.opacity = 1;
     LayoutManager.emit("VIEW_CHANGE", key);
 
