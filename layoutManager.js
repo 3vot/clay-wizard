@@ -95,13 +95,17 @@ LayoutManager.bringIntoView = function(key, values, action){
     if(currentController){
       if(action == "back"){
         currentController.view.classList.remove("active");  
+        currentController.view.classList.remove("deactive");  
+      }
+      else{
+        currentController.view.classList.remove("active");
         currentController.view.classList.add("deactive");  
       }
-      else currentController.view.classList.remove("active");
     }
 
     currentController = controller;
     controller.view.classList.add("active")
+    controller.view.classList.remove("deactive")
     LayoutManager.emit("VIEW_CHANGE", key);
 
     if(ProcessManager.debug) console.log("LAYOUT_MANAGER", "********  STEP COMPLETE *************" )
