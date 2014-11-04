@@ -28,6 +28,7 @@ LayoutManager.register = function(containerSelector, processManagerController, o
   slider.style.height =  height + "px" ;
   container.appendChild( slider );
 
+  LayoutManager.detectSwipe();
 
 }
 
@@ -40,10 +41,12 @@ LayoutManager.start = function(){
 LayoutManager.goBack = function(){
   var key = controllers[currentController.name];
   var currentIndex = controllersKeys.indexOf(key) -1;
-  if(currentIndex == 0) return "This is the first step, can't go back";
+  if(currentIndex == -1) return "This is the first step, can't go back";
 
-  processManager.route( currentController, { action: "back", values: null } )
+  processManager.route( currentController, { action: "back", values: { lastKey: controllersKeys[currentIndex] } } )
 }
+
+
 
 LayoutManager.registerView = function(controller){
   controllersKeys.push(controller.name);
@@ -56,13 +59,17 @@ LayoutManager.registerView = function(controller){
   controller.view = view;
   slider.appendChild(view);
 
-  controller.view.style.left = window.x + "px"
+  //controller.view.style.left = window.x + "px"
 
-  controller.view.style.display = "none";
+  //controller.view.style.display = "none";
 
   controller.on("STEP", function(options){ 
     if(options.action == "back") options.values = null
     processManager.route( controller, options )
+  });
+
+  controller.on("LAYOUT", function(options){
+    LayoutManager.emit(options.action, options.values);
   });
 }
 
@@ -86,23 +93,62 @@ LayoutManager.bringIntoView = function(key, values, action){
   setTimeout( function(){
 
     if(currentController){
-      currentController.view.style.opacity = 0;
-      currentController.view.style.left = "-100%";
+      if(action == "back"){
+        currentController.view.classList.remove("active");  
+        currentController.view.classList.add("deactive");  
+      }
+      else currentController.view.classList.remove("active");
     }
 
     currentController = controller;
-    controller.view.style.left =  "20%";
-    if(window.x < 800) controller.view.style.left = "5%";
-    controller.view.style.opacity = 1;
+    controller.view.classList.add("active")
     LayoutManager.emit("VIEW_CHANGE", key);
 
     if(ProcessManager.debug) console.log("LAYOUT_MANAGER", "********  STEP COMPLETE *************" )
 
-   
   }, 30 );
 }
 
+LayoutManager.detectSwipe = function(){
+  document.addEventListener('touchstart', handleTouchStart, false);        
+  document.addEventListener('touchmove', handleTouchMove, false);
 
+  var xDown = null;                                                        
+  var yDown = null;                                                        
+
+  function handleTouchStart(evt) {                                         
+      xDown = evt.touches[0].clientX;                                      
+      yDown = evt.touches[0].clientY;                                      
+  };                                                
+
+  function handleTouchMove(evt) {
+      if ( ! xDown || ! yDown ) {
+          return;
+      }
+
+      var xUp = evt.touches[0].clientX;                                    
+      var yUp = evt.touches[0].clientY;
+
+      var xDiff = xDown - xUp;
+      var yDiff = yDown - yUp;
+
+      if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
+          if ( xDiff > 0 ) {
+          } else {
+              LayoutManager.goBack();
+          }                       
+      } else {
+          if ( yDiff > 0 ) {
+              /* up swipe */ 
+          } else { 
+              /* down swipe */
+          }                                                                 
+      }
+      /* reset values */
+      xDown = null;
+      yDown = null;                                             
+  };
+}
 
 
 function updateHistory(index){

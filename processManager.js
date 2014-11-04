@@ -7,7 +7,6 @@ ProcessManager = function(){}
 // Default names for steps are next and back, but you can have custom ones and several ones for complex flows
 ProcessManager.routes = {}
 
-
 ProcessManager.route = function( controller, options ){
 	LayoutManager.emit("CHANGE_START");
 	if(ProcessManager.debug) console.log("PROCESS_MANAGER: ROUTE CALLED FROM ::", controller.name, {"Action":options.action, "Values": options.values, "Controller":controller})
@@ -16,6 +15,9 @@ ProcessManager.route = function( controller, options ){
 	if(!controllerRoute)  throw "PROCESS MANAGER ERROR: No route found for " + controller.name 
 	var controllerAction = controllerRoute[options.action];
 	if(!controllerAction)  throw "PROCESS MANAGER ERROR: No action "+options.action+" found for " + controller.name 
+	//else if(!controllerAction && options.action == "back" && !options.values.lastKey) return LayoutManager.goBack();
+	//else if(!controllerAction && options.action == "back" &&  options.values.lastKey) return ProcessManager.bringIntoView( options.values.lastKey, {}, "back" )
+
 
 	controllerAction(options.action, options.values, controller);
   controller.lastValues = options.values;
@@ -23,10 +25,11 @@ ProcessManager.route = function( controller, options ){
 
 // Function to trigger LayoutManager Events
 // Only LayoutManager communicates eventfully with other components
-ProcessManager.fireDelayed = function(event){
+ProcessManager.fireDelayed = function(event, delay){
+	if(!delay) delay = 800;
 	setTimeout(function(){
 		LayoutManager.emit(event);
-	},800);
+	},delay);
 }
 
 //Internal function for debugging and connection with LayoutManager, LayoutManager is not exposed
