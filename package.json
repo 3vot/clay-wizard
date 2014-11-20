@@ -1,6 +1,6 @@
 {
   "name": "clay-wizard",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Clay Clases to build a Wizard with Salesforce.com and Clayforsalesforce.com",
   "main": "index.js",
   "scripts": {
