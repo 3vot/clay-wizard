@@ -1,10 +1,9 @@
 var domify = require("domify");
 var Events  = require("events").EventEmitter
-
+var path = require("path")
 
 function Wizard(dirname, Layout){
-	var name;
-	if(dirname.indexOf("/") > -1) name = dirname.split("/").pop();
+	var name = path.basename(dirname);
 	else name = dirname
 
 	var _this = this;
