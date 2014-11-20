@@ -4,7 +4,6 @@ var path = require("path")
 
 function Wizard(dirname, Layout){
 	var name = path.basename(dirname);
-	else name = dirname
 
 	var _this = this;
 	this.name = name;
