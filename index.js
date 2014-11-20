@@ -3,7 +3,10 @@ var Events  = require("events").EventEmitter
 var path = require("path")
 
 function Wizard(dirname, Layout){
-	var name = path.basename(dirname);
+	var name;
+	if(dirname.indexOf("/") > -1) name = dirname.split("/").pop();
+	else if(dirname.indexOf("\\") > -1) name = dirname.split("\\").pop();
+	else name = dirname;
 
 	var _this = this;
 	this.name = name;
